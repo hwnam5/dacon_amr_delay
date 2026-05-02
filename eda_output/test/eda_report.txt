@@ -1,0 +1,304 @@
+
+############################################################
+# EDA: test  (50,000 rows × 93 cols)
+############################################################
+
+============================================================
+1. 데이터 기본 파악
+============================================================
+
+[Shape] 50,000 rows × 93 cols
+
+[dtypes]
+  float64     : 87개
+  object      : 3개
+  int64       : 3개
+
+[Head]
+            ID layout_id scenario_id  order_inflow_15m  unique_sku_15m  avg_items_per_order  urgent_order_ratio  heavy_item_ratio  cold_chain_ratio  sku_concentration  robot_active  robot_idle  robot_charging  robot_utilization  avg_trip_distance  task_reassign_15m  battery_mean  battery_std  low_battery_ratio  charge_queue_length  avg_charge_wait  congestion_score  max_zone_density  blocked_path_15m  near_collision_15m  fault_count_15m  avg_recovery_time  replenishment_overlap  pack_utilization  manual_override_ratio  warehouse_temp_avg  humidity_pct  day_of_week  external_temp_c  wind_speed_kmh  precipitation_mm  lighting_level_lux  ambient_noise_db  floor_vibration_idx  return_order_ratio  air_quality_idx  co2_level_ppm  hvac_power_kw  wms_response_time_ms  scanner_error_rate  wifi_signal_db  network_latency_ms  worker_avg_tenure_months  safety_score_monthly  label_print_queue  barcode_read_success_rate  ups_battery_pct  lighting_zone_variance  shift_hour  staff_on_floor  forklift_active_count  loading_dock_util  conveyor_speed_mps  prev_shift_volume  avg_package_weight_kg  inventory_turnover_rate  daily_forecast_accuracy  order_wave_count  pick_list_length_avg  express_lane_util  bulk_order_ratio  staging_area_util  cold_storage_temp_c  pallet_wrap_time_min  fleet_age_months_avg  maintenance_schedule_score  robot_firmware_update_days  avg_idle_duration_min  charge_efficiency_pct  battery_cycle_count_avg  agv_task_success_rate  robot_calibration_score  aisle_traffic_score  zone_temp_variance  path_optimization_score  intersection_wait_time_avg  storage_density_pct  vertical_utilization  racking_height_avg_m  cross_dock_ratio  packaging_material_cost  quality_check_rate  outbound_truck_wait_min  dock_to_stock_hours  kpi_otd_pct  backorder_ratio  shift_handover_delay_min  sort_accuracy_pct
+0  TEST_000000    WH_202    SC_10973              61.0           155.0                  NaN              0.0000            0.0656            0.1311             0.3047            11          31               2             0.2500              44.26                0.0           NaN          NaN                0.0                  0.0              0.0             16.70            0.0682               0.0                 0.0              2.0               1.87                 0.0000            0.0098                 0.0841               16.67          60.6          5.0             19.6            18.5               NaN               421.0              90.0                  NaN              0.0922              0.0          684.0           74.5                   NaN              0.0145             NaN                43.6                      91.0                  75.6               12.0                     0.9954             63.9                  0.7037        16.0            19.0                    5.0             0.5099                1.66             1917.0                   4.07                     1.86                      NaN               NaN                 12.61             0.0749            0.2521             0.6405                 -7.3                  2.60                  45.9                         NaN                        41.2                   7.03                   91.0                     98.0                 0.9334                     96.4                 47.7                1.80                     75.5                        1.63               0.4370                0.6587                  4.88            0.0534                     4.93              0.2164                     13.5                  NaN         96.2           0.0374                      0.00              97.74
+1  TEST_000001    WH_202    SC_10973              59.0           108.0                  NaN                 NaN            0.0847            0.0847             0.3047            20          24               0             0.4545                NaN                0.0         66.59        17.45                0.0                  0.0              0.0             20.04            0.0909               2.0                 0.0              0.0               0.00                 0.0000            0.4706                 0.0869               23.38          47.1          3.0              NaN            25.2              17.6               498.0              90.0               0.4479              0.1101              0.0          562.0           63.8                  50.0                 NaN           -39.8                50.0                      76.0                  68.7               15.0                     0.9928             72.4                  0.7690        16.0            22.0                    5.0             0.6409                1.66             2221.0                   3.56                     2.51                   0.8653              20.0                 11.20             0.0376               NaN             0.4746                 -8.6                  3.31                  45.9                        70.0                        36.0                   7.45                   94.8                     80.0                    NaN                     87.7                 45.5                0.91                     76.1                        2.39               0.5515                   NaN                  6.69               NaN                      NaN                 NaN                     21.1                15.94         90.5           0.0522                      3.03                NaN
+2  TEST_000002    WH_202    SC_10973              95.0           200.0                 3.35              0.0526               NaN            0.1053             0.3047            28          15               1             0.6364              43.29                0.0         63.92        17.56                0.0                  0.0              0.0             25.05            0.1136               0.0                 2.0              1.0               4.81                 0.0517            0.7549                 0.0912               19.88          72.7          NaN             11.2             NaN              16.9               477.0              86.1               0.2523              0.0910             29.0          530.0            NaN                 112.0              0.0078           -30.0                46.9                      89.0                  75.8               14.0                     0.9885              NaN                  0.5856        16.0            34.0                    5.0             0.6232                1.36             2219.0                   5.81                     2.04                   0.8820              19.0                   NaN             0.0822            0.1913             0.5909                 -6.9                  2.38                  46.0                        70.7                        42.8                   8.98                   98.5                     61.0                 0.9527                     87.7                 50.3                1.91                     91.8                         NaN               0.4588                0.6956                  6.28            0.0534                     8.57              0.2292                     23.2                16.25          NaN           0.0649                      1.36              95.31
+
+[Tail]
+                ID layout_id scenario_id  order_inflow_15m  unique_sku_15m  avg_items_per_order  urgent_order_ratio  heavy_item_ratio  cold_chain_ratio  sku_concentration  robot_active  robot_idle  robot_charging  robot_utilization  avg_trip_distance  task_reassign_15m  battery_mean  battery_std  low_battery_ratio  charge_queue_length  avg_charge_wait  congestion_score  max_zone_density  blocked_path_15m  near_collision_15m  fault_count_15m  avg_recovery_time  replenishment_overlap  pack_utilization  manual_override_ratio  warehouse_temp_avg  humidity_pct  day_of_week  external_temp_c  wind_speed_kmh  precipitation_mm  lighting_level_lux  ambient_noise_db  floor_vibration_idx  return_order_ratio  air_quality_idx  co2_level_ppm  hvac_power_kw  wms_response_time_ms  scanner_error_rate  wifi_signal_db  network_latency_ms  worker_avg_tenure_months  safety_score_monthly  label_print_queue  barcode_read_success_rate  ups_battery_pct  lighting_zone_variance  shift_hour  staff_on_floor  forklift_active_count  loading_dock_util  conveyor_speed_mps  prev_shift_volume  avg_package_weight_kg  inventory_turnover_rate  daily_forecast_accuracy  order_wave_count  pick_list_length_avg  express_lane_util  bulk_order_ratio  staging_area_util  cold_storage_temp_c  pallet_wrap_time_min  fleet_age_months_avg  maintenance_schedule_score  robot_firmware_update_days  avg_idle_duration_min  charge_efficiency_pct  battery_cycle_count_avg  agv_task_success_rate  robot_calibration_score  aisle_traffic_score  zone_temp_variance  path_optimization_score  intersection_wait_time_avg  storage_density_pct  vertical_utilization  racking_height_avg_m  cross_dock_ratio  packaging_material_cost  quality_check_rate  outbound_truck_wait_min  dock_to_stock_hours  kpi_otd_pct  backorder_ratio  shift_handover_delay_min  sort_accuracy_pct
+49997  TEST_049997    WH_225    SC_10910              10.0             NaN                 2.10                 NaN            0.0000            0.0000              0.215             2          14               2             0.1111              30.93                0.0         48.41          NaN             0.0556                  NaN              0.0               NaN            0.0556               NaN                 0.0              0.0                0.0                 0.0251            0.0833                 0.0334                 NaN          66.5          5.0             -1.4            46.5              20.3               756.0              56.0               0.6124                 NaN              NaN            NaN           23.7                 333.0              0.0004           -57.5                 7.7                      45.0                  92.4                0.0                     0.9990             69.8                  0.4316        15.0            21.0                    0.0                NaN                2.03              282.0                   0.94                     1.15                   0.8821               1.0                 13.26                NaN            0.1525             0.6111                 -9.9                  5.33                  24.0                        98.8                        22.3                   5.19                   85.5                    119.0                 0.9528                     82.2                  NaN                3.01                     89.5                        0.32               0.9052                0.5258                  5.71            0.2488                     6.52              0.0536                      9.4                  NaN         86.9           0.1206                      9.75              96.14
+49998  TEST_049998    WH_225    SC_10910              17.0            15.0                  NaN                 NaN            0.2353            0.0000              0.215             4          12               2             0.2222              28.97                0.0         49.34        15.53             0.0000                  0.0              NaN              0.00            0.0000               0.0                 NaN              0.0                0.0                 0.0084            1.0000                 0.0328               29.72          67.1          6.0             -4.3            36.3              19.4               729.0               NaN               0.9473              0.0825             11.4          717.0           16.3                 270.0              0.0150           -58.7                 5.2                      49.0                  83.0                3.0                     1.0000             72.2                  0.8487         9.0            26.0                    0.0             0.4877                1.04              265.0                   5.21                     0.78                   0.9320               1.0                 12.47             0.6066            0.2588             0.5628                -10.3                  5.71                  13.4                        94.8                        39.4                    NaN                   83.8                      NaN                 0.9589                     87.9                 14.7                2.74                     91.5                        1.59               0.7775                   NaN                  5.15               NaN                     9.41              0.0881                     20.1                12.96         81.9           0.1228                      8.09                NaN
+49999  TEST_049999    WH_225    SC_10910              17.0            18.0                 1.88                 NaN            0.1765            0.0588              0.215             3          13               2             0.1667              25.47                0.0         49.77        18.11             0.0556                  0.0              0.0              1.28            0.0556               0.0                 1.0              0.0                0.0                    NaN            0.3750                    NaN               24.73          49.2          5.0             -5.0            38.7              17.2               791.0               NaN               0.6410              0.0466              0.3          738.0           39.7                 237.0              0.0174           -37.8                 NaN                      51.0                  97.9                0.0                     0.9733             69.4                  0.5874        13.0            23.0                    NaN             0.4012                1.91              548.0                   4.03                     0.78                   0.9913               8.0                  9.41             0.5500            0.1467             0.3786                -11.9                  5.10                  27.1                        92.2                        22.3                   8.32                   78.7                    234.0                 0.9326                     84.8                 27.7                3.03                      NaN                        0.23               0.6683                0.3995                  5.85            0.1299                     7.62                 NaN                     14.4                13.34         80.1           0.1088                      9.75              95.64
+
+[결측값] 결측 있는 컬럼: 86개
+                            missing_count  missing_pct(%)
+avg_recovery_time                    6676           13.35
+congestion_score                     6318           12.64
+avg_charge_wait                      6199           12.40
+battery_cycle_count_avg              6135           12.27
+wifi_signal_db                       6090           12.18
+robot_firmware_update_days           6075           12.15
+external_temp_c                      6072           12.14
+pallet_wrap_time_min                 6053           12.11
+barcode_read_success_rate            6048           12.10
+battery_mean                         6051           12.10
+cold_storage_temp_c                  6046           12.09
+inventory_turnover_rate              6040           12.08
+bulk_order_ratio                     6030           12.06
+vertical_utilization                 6029           12.06
+unique_sku_15m                       6032           12.06
+co2_level_ppm                        6021           12.04
+fault_count_15m                      6015           12.03
+network_latency_ms                   6008           12.02
+hvac_power_kw                        6010           12.02
+charge_queue_length                  6004           12.01
+zone_temp_variance                   6003           12.01
+loading_dock_util                    6003           12.01
+return_order_ratio                   5991           11.98
+daily_forecast_accuracy              5987           11.97
+racking_height_avg_m                 5986           11.97
+wind_speed_kmh                       5987           11.97
+max_zone_density                     5985           11.97
+blocked_path_15m                     5981           11.96
+shift_handover_delay_min             5977           11.95
+worker_avg_tenure_months             5973           11.95
+outbound_truck_wait_min              5970           11.94
+backorder_ratio                      5969           11.94
+path_optimization_score              5969           11.94
+pick_list_length_avg                 5963           11.93
+pack_utilization                     5960           11.92
+avg_idle_duration_min                5955           11.91
+label_print_queue                    5956           11.91
+replenishment_overlap                5952           11.90
+air_quality_idx                      5952           11.90
+agv_task_success_rate                5951           11.90
+order_wave_count                     5948           11.90
+day_of_week                          5944           11.89
+staff_on_floor                       5945           11.89
+lighting_level_lux                   5938           11.88
+intersection_wait_time_avg           5938           11.88
+manual_override_ratio                5934           11.87
+cold_chain_ratio                     5932           11.86
+precipitation_mm                     5932           11.86
+staging_area_util                    5927           11.85
+fleet_age_months_avg                 5927           11.85
+storage_density_pct                  5925           11.85
+quality_check_rate                   5921           11.84
+dock_to_stock_hours                  5921           11.84
+ups_battery_pct                      5915           11.83
+lighting_zone_variance               5915           11.83
+express_lane_util                    5913           11.83
+kpi_otd_pct                          5909           11.82
+avg_items_per_order                  5907           11.81
+urgent_order_ratio                   5898           11.80
+maintenance_schedule_score           5895           11.79
+humidity_pct                         5896           11.79
+sku_concentration                    5893           11.79
+heavy_item_ratio                     5890           11.78
+forklift_active_count                5890           11.78
+floor_vibration_idx                  5883           11.77
+wms_response_time_ms                 5887           11.77
+robot_calibration_score              5883           11.77
+battery_std                          5879           11.76
+avg_package_weight_kg                5878           11.76
+order_inflow_15m                     5873           11.75
+near_collision_15m                   5876           11.75
+safety_score_monthly                 5870           11.74
+avg_trip_distance                    5866           11.73
+shift_hour                           5867           11.73
+prev_shift_volume                    5861           11.72
+sort_accuracy_pct                    5859           11.72
+scanner_error_rate                   5854           11.71
+low_battery_ratio                    5857           11.71
+ambient_noise_db                     5828           11.66
+charge_efficiency_pct                5815           11.63
+cross_dock_ratio                     5808           11.62
+packaging_material_cost              5804           11.61
+conveyor_speed_mps                   5806           11.61
+task_reassign_15m                    5799           11.60
+aisle_traffic_score                  5764           11.53
+warehouse_temp_avg                   5739           11.48
+
+[중복 행] 0개
+
+============================================================
+2. 기술 통계
+============================================================
+
+수치형 컬럼 (90개):
+                              count         mean          std       min          25%        50%          75%        max   skew     kurt
+order_inflow_15m            44127.0   131.676343    90.316472    0.0000    57.000000   125.0000   193.000000   500.0000  0.512   -0.277
+unique_sku_15m              43968.0   140.775678   128.313759    0.0000    49.000000    96.0000   191.000000   500.0000  1.387    1.183
+avg_items_per_order         44093.0     3.269721     2.106621    1.0000     1.420000     2.5200     4.640000    15.0000  0.991    0.088
+urgent_order_ratio          44102.0     0.130670     0.115547    0.0000     0.031000     0.0993     0.214000     1.0000  0.718   -0.371
+heavy_item_ratio            44110.0     0.190333     0.111160    0.0000     0.108100     0.1878     0.271800     1.0000  0.304    0.821
+cold_chain_ratio            44068.0     0.102830     0.081691    0.0000     0.038100     0.0904     0.152500     0.5000  0.813    0.540
+sku_concentration           44107.0     0.451048     0.213624    0.1006     0.262500     0.4424     0.621200     0.8990  0.225   -1.025
+robot_active                50000.0    17.122220    14.521872    0.0000     6.000000    13.0000    25.000000    90.0000  1.246    1.458
+robot_idle                  50000.0    23.886560    23.985364    0.0000     0.000000    18.0000    43.000000    96.0000  0.601   -0.921
+robot_charging              50000.0     9.247220    16.821883    0.0000     0.000000     1.0000    11.000000    99.0000  2.340    5.180
+robot_utilization           50000.0     0.365928     0.261473    0.0000     0.142900     0.3182     0.551700     1.0000  0.576   -0.667
+avg_trip_distance           44134.0    47.017946    26.498029    5.0000    26.340000    42.9100    62.130000   169.3200  0.973    1.170
+task_reassign_15m           44201.0     0.232438     1.387256    0.0000     0.000000     0.0000     0.000000    39.0000  9.275  116.962
+battery_mean                43949.0    50.672604    17.422294   10.0000    40.880000    56.8300    63.470000    82.3100 -0.980   -0.298
+battery_std                 44121.0    19.441005     4.559937    5.3600    16.670000    17.7000    20.100000    30.0000  1.261    0.447
+low_battery_ratio           44143.0     0.186707     0.295626    0.0000     0.000000     0.0000     0.333300     1.0000  1.302    0.117
+charge_queue_length         43996.0     4.025957     8.975088    0.0000     0.000000     0.0000     0.000000    30.0000  2.161    3.136
+avg_charge_wait             43801.0     3.556681     7.774950    0.0000     0.000000     0.0000     0.000000    30.0000  2.364    4.666
+congestion_score            43682.0    12.696899    21.983463    0.0000     0.000000     1.1100    16.470000   100.0000  2.272    4.999
+max_zone_density            44015.0     0.079112     0.130760    0.0000     0.000000     0.0104     0.111100     1.0000  2.262    5.826
+blocked_path_15m            44019.0     0.663214     1.558659    0.0000     0.000000     0.0000     0.000000    13.0000  3.090   10.696
+near_collision_15m          44124.0     0.521553     1.098430    0.0000     0.000000     0.0000     1.000000    10.0000  2.568    7.187
+fault_count_15m             43985.0     0.467046     1.102311    0.0000     0.000000     0.0000     0.000000     5.0000  2.817    7.629
+avg_recovery_time           43324.0     1.027142     2.485242    0.0000     0.000000     0.0000     0.000000    15.0000  2.947    9.311
+replenishment_overlap       44048.0     0.038866     0.051857    0.0000     0.000000     0.0188     0.061325     0.5384  1.995    5.613
+pack_utilization            44040.0     0.461058     0.380589    0.0000     0.092825     0.3708     0.909100     1.0000  0.307   -1.488
+manual_override_ratio       44066.0     0.072392     0.039448    0.0100     0.043400     0.0698     0.092600     0.2951  1.152    2.592
+warehouse_temp_avg          44261.0    22.446349     4.535592   15.0000    18.610000    22.3800    26.290000    30.0000  0.021   -1.158
+humidity_pct                44104.0    49.389665    18.061240   20.0000    34.100000    48.9000    64.700000    80.0000  0.050   -1.153
+day_of_week                 44056.0     2.496300     1.765670    0.0000     1.000000     2.0000     4.000000     6.0000  0.180   -1.021
+external_temp_c             43928.0    17.614624    13.547005   -5.0000     6.100000    18.0000    28.900000    40.0000 -0.035   -1.139
+wind_speed_kmh              44013.0    25.521364    15.113115    0.0000    12.800000    25.8000    38.300000    50.0000 -0.042   -1.145
+precipitation_mm            44068.0    14.954559     8.989888    0.0000     7.400000    14.9000    22.400000    30.0000  0.005   -1.130
+lighting_level_lux          44062.0   499.023807   179.165509  200.0000   348.000000   498.0000   649.000000   800.0000  0.018   -1.128
+ambient_noise_db            44172.0    69.799810    12.021104   50.0000    59.700000    69.8000    79.800000    90.0000  0.018   -1.137
+floor_vibration_idx         44117.0     0.493018     0.297019    0.0000     0.244100     0.4888     0.740600     1.0000  0.026   -1.120
+return_order_ratio          44009.0     0.074205     0.044759    0.0000     0.036400     0.0742     0.111300     0.1500  0.018   -1.127
+air_quality_idx             44048.0    50.212775    30.333807    0.0000    24.300000    50.2000    76.000000   100.0000 -0.003   -1.167
+co2_level_ppm               43979.0   799.659428   239.735660  400.0000   599.000000   797.0000  1002.000000  1200.0000  0.007   -1.140
+hvac_power_kw               43990.0    42.794469    22.590203    5.0000    23.800000    43.1000    61.800000    80.0000 -0.023   -1.145
+wms_response_time_ms        44113.0   272.807676   133.773243   50.0000   162.000000   272.0000   384.000000   500.0000  0.015   -1.110
+scanner_error_rate          44146.0     0.024796     0.014849    0.0000     0.012500     0.0245     0.037000     0.0500  0.031   -1.099
+wifi_signal_db              43910.0   -54.594912    14.922824  -80.0000   -67.000000   -54.3000   -42.200000   -30.0000 -0.040   -1.114
+network_latency_ms          43992.0    25.385825    14.730757    1.0000    13.000000    25.4000    37.700000    50.0000  0.002   -1.140
+worker_avg_tenure_months    44027.0    62.757217    34.374470    6.0000    33.000000    64.0000    92.000000   120.0000 -0.022   -1.158
+safety_score_monthly        44130.0    79.825479    12.001823   60.0000    69.700000    79.9000    89.900000   100.0000  0.007   -1.138
+label_print_queue           44044.0     9.629984     5.932314    0.0000     5.000000    10.0000    15.000000    20.0000  0.022   -1.109
+barcode_read_success_rate   43952.0     0.950505     0.030218    0.9000     0.925100     0.9505     0.976200     1.0000 -0.004   -1.156
+ups_battery_pct             44085.0    74.920161    14.744442   50.0000    62.700000    74.9000    87.100000   100.0000  0.009   -1.094
+lighting_zone_variance      44085.0     0.500982     0.301310    0.0000     0.246600     0.5027     0.756000     1.0000 -0.005   -1.148
+shift_hour                  44133.0     9.968822     5.243001    0.0000     6.000000    10.0000    14.000000    23.0000  0.040   -0.848
+staff_on_floor              44055.0    24.610805     9.620646    5.0000    17.000000    25.0000    32.000000    50.0000  0.066   -0.691
+forklift_active_count       44110.0     4.071186     2.080072    0.0000     3.000000     4.0000     6.000000    10.0000  0.098   -0.553
+loading_dock_util           43997.0     0.481581     0.215054    0.0000     0.324900     0.4810     0.638600     1.0000  0.012   -0.597
+conveyor_speed_mps          44194.0     1.780338     0.597322    0.5000     1.370000     1.7700     2.220000     3.0000 -0.032   -0.650
+prev_shift_volume           44139.0  2324.072974  1011.979964  100.0000  1569.000000  2308.0000  3042.000000  5000.0000  0.097   -0.548
+avg_package_weight_kg       44122.0     7.510472     3.132024    0.5000     5.050000     7.5000     9.950000    15.0000  0.013   -0.828
+inventory_turnover_rate     43960.0     2.618191     0.927888    0.5000     1.940000     2.6200     3.280000     5.0000  0.040   -0.554
+daily_forecast_accuracy     44013.0     0.765888     0.111056    0.5000     0.678100     0.7645     0.852500     1.0000  0.001   -0.814
+order_wave_count            44052.0    13.696064     6.114693    1.0000     9.000000    14.0000    18.000000    30.0000  0.083   -0.658
+pick_list_length_avg        44037.0     8.724742     4.046894    1.0000     5.600000     8.7200    11.770000    20.0000  0.101   -0.683
+express_lane_util           44087.0     0.422753     0.211024    0.0000     0.264800     0.4211     0.569300     1.0000  0.130   -0.554
+bulk_order_ratio            43970.0     0.207535     0.109251    0.0000     0.121700     0.2076     0.291900     0.5000  0.072   -0.774
+staging_area_util           44073.0     0.486527     0.211955    0.0000     0.327900     0.4880     0.640500     1.0000  0.010   -0.645
+cold_storage_temp_c         43954.0   -11.988834     6.518574  -25.0000   -17.100000   -12.1000    -7.000000     5.0000  0.097   -0.763
+pallet_wrap_time_min        43947.0     3.748794     1.718677    0.5000     2.380000     3.7400     5.120000     8.0000  0.043   -0.886
+fleet_age_months_avg        44073.0    30.552638    11.861716    6.0000    21.200000    30.5000    39.600000    60.0000  0.109   -0.737
+maintenance_schedule_score  44105.0    80.863131    11.387946   50.0000    72.800000    81.1000    89.800000   100.0000 -0.275   -0.502
+robot_firmware_update_days  43925.0    32.532633    19.113408    1.0000    16.900000    32.2000    47.400000    90.0000  0.174   -0.703
+avg_idle_duration_min       44045.0     6.353857     3.370680    0.0000     3.760000     6.3400     8.870000    15.0000  0.099   -0.682
+charge_efficiency_pct       44185.0    86.601023     6.713033   70.0000    81.400000    86.6000    91.900000   100.0000 -0.094   -0.778
+battery_cycle_count_avg     43865.0   206.743007    98.733063   50.0000   128.000000   203.0000   276.000000   500.0000  0.395   -0.237
+agv_task_success_rate       44049.0     0.918033     0.032936    0.8500     0.892200     0.9181     0.943800     1.0000  0.036   -0.809
+robot_calibration_score     44117.0    82.353073     8.879484   60.0000    75.200000    82.3000    89.500000   100.0000 -0.006   -0.963
+aisle_traffic_score         44236.0    33.000052    19.295127    0.0000    17.800000    32.6000    47.200000   100.0000  0.280   -0.339
+zone_temp_variance          43997.0     1.891574     1.064496    0.0000     1.040000     1.9000     2.730000     5.0000  0.062   -0.808
+path_optimization_score     44031.0    78.556290    10.106940   50.0000    70.800000    78.6000    86.400000   100.0000 -0.072   -0.713
+intersection_wait_time_avg  44062.0     3.428932     2.027065    0.0000     1.810000     3.4200     4.980000    10.0000  0.188   -0.551
+storage_density_pct         44075.0     0.640771     0.146664    0.3007     0.523500     0.6408     0.758100     1.0000  0.014   -0.906
+vertical_utilization        43971.0     0.601222     0.181227    0.2000     0.465050     0.6008     0.735800     1.0000  0.025   -0.696
+racking_height_avg_m        44014.0     6.854243     2.266326    2.0100     5.000000     6.8500     8.720000    12.0000  0.011   -1.018
+cross_dock_ratio            44192.0     0.225550     0.106532    0.0021     0.140500     0.2259     0.309500     0.5000  0.033   -0.845
+packaging_material_cost     44196.0     5.064602     2.260843    0.5000     3.390000     5.0400     6.620000    10.0000  0.089   -0.642
+quality_check_rate          44079.0     0.126710     0.059652    0.0000     0.079400     0.1259     0.172500     0.3000  0.103   -0.750
+outbound_truck_wait_min     44030.0    14.520550     7.185855    0.0000     9.100000    14.4000    19.500000    30.0000  0.106   -0.662
+dock_to_stock_hours         44079.0     9.558488     4.964820    1.0000     5.550000     9.5800    13.500000    24.0000  0.095   -0.785
+kpi_otd_pct                 44091.0    86.498385     6.361222   70.0000    81.800000    86.5000    91.300000   100.0000 -0.093   -0.639
+backorder_ratio             44031.0     0.095066     0.042293    0.0000     0.063000     0.0959     0.126400     0.2000  0.001   -0.662
+shift_handover_delay_min    44023.0     4.972281     3.051339    0.0000     2.460000     4.9400     7.400000    15.0000  0.126   -0.823
+sort_accuracy_pct           44141.0    96.342337     2.189871   90.0000    94.640000    96.3900    98.120000   100.0000 -0.178   -0.690
+
+범주형 컬럼 (3개):
+
+  [ID] 고유값: 50000개
+ID
+TEST_049999    1
+TEST_000000    1
+TEST_000001    1
+TEST_000002    1
+TEST_000003    1
+TEST_000004    1
+TEST_000005    1
+TEST_000006    1
+TEST_000007    1
+TEST_000008    1
+
+  [layout_id] 고유값: 100개
+layout_id
+WH_202    600
+WH_185    600
+WH_299    600
+WH_289    600
+WH_056    600
+WH_039    600
+WH_179    600
+WH_209    600
+WH_036    600
+WH_225    600
+
+  [scenario_id] 고유값: 2000개
+scenario_id
+SC_10910    25
+SC_10973    25
+SC_10778    25
+SC_11860    25
+SC_10174    25
+SC_10101    25
+SC_11867    25
+SC_11534    25
+SC_10638    25
+SC_11870    25
+
+============================================================
+3. 분포 시각화
+============================================================
+
+[이상치 요약] IQR 기준:
+                       col  n_outlier  pct(%)
+          blocked_path_15m      10692   24.29
+       charge_queue_length      10556   23.99
+           avg_charge_wait      10387   23.71
+           fault_count_15m       9726   22.11
+         avg_recovery_time       9400   21.70
+               battery_std       7225   16.38
+            robot_charging       6218   12.44
+          congestion_score       4506   10.32
+          max_zone_density       3967    9.01
+        near_collision_15m       3229    7.32
+            unique_sku_15m       3029    6.89
+         task_reassign_15m       2189    4.95
+         low_battery_ratio       2022    4.58
+     replenishment_overlap       1721    3.91
+     manual_override_ratio       1221    2.77
+              robot_active       1322    2.64
+         avg_trip_distance        846    1.92
+          cold_chain_ratio        356    0.81
+   battery_cycle_count_avg        181    0.41
+       avg_items_per_order        161    0.37
+          order_inflow_15m        160    0.36
+       aisle_traffic_score        142    0.32
+intersection_wait_time_avg         72    0.16
+  shift_handover_delay_min         56    0.13
+          heavy_item_ratio         47    0.11
+        urgent_order_ratio         34    0.08
+  → 그래프 저장: eda_output/test/
+
+============================================================
+4. 관계 분석
+============================================================
+  → 그래프 저장: eda_output/test/
+
+============================================================
+5. 시계열/그룹 분석
+============================================================
+  타깃 컬럼 없음 — 그룹/시계열 분석 생략
+
+============================================================
+완료. 결과물: /home/hwnam/nam_project/smart_storage/eda_output/test/
+============================================================
