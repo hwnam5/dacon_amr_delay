@@ -1,0 +1,30 @@
+# 데이터
+open/
+processed/
+
+# 모델 체크포인트
+*.pt
+*.pth
+
+# 제출 파일
+submission*.csv
+
+# EDA 결과
+eda_output/
+
+# 가상환경
+myenv/
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# 시스템
+.DS_Store
