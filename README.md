@@ -24,12 +24,44 @@ AMR(자율이동로봇) 기반 스마트 창고에서 향후 30분간 평균 출
 
 ## 파이프라인
 
-```
-1. MICE 결측치 대체   python impute_mice.py
-2. 모델 학습 / 추론   python model.py
+```bash
+python impute_mice.py   # 1단계: 결측치 대체
+python model.py         # 2단계: 딥러닝 학습
+python lgbm_stage.py    # 3단계: 임베딩 추출 + LightGBM
 ```
 
-결과물: `submission.csv`
+---
+
+## 전체 구조
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━ 1단계: 딥러닝 학습 ━━━━━━━━━━━━━━━━━━━━━━━
+
+  그룹 A~J ──→ GroupMLP×10 ──┐
+                              ├──→ CLS 토큰 ──→ Head ──→ 예측값
+  layout info ─→ Transformer  │    (d_model차원)    (학습에만 사용)
+                    + FiLM ───┘
+
+  저장: best_model.pt
+
+━━━━━━━━━━━━━━━━━━━━━━━ 2단계: 임베딩 추출 ━━━━━━━━━━━━━━━━━━━━━━━
+
+  best_model.pt 로드
+  Head 제거 → encode() 호출
+  → CLS 토큰 임베딩 (N, d_model)
+
+━━━━━━━━━━━━━━━━━━━━━━━ 3단계: LightGBM ━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  임베딩 (N, d_model) ──┐
+                        ├──→ Concat ──→ LightGBM ──→ 지연 예측값
+  원본 피처 (N, 104)  ──┘
+
+  저장: submission_lgbm.csv
+```
+
+**원본 피처 (104차원)**: 그룹 A~J 피처 90개 + layout 수치 13개 + layout_type 1개
+
+딥러닝이 비선형 관계를 압축한 임베딩과, LightGBM이 트리 분기로 직접 활용하는 원본 피처를 결합해 두 모델의 강점을 동시에 활용합니다.
 
 ---
 

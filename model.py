@@ -157,32 +157,17 @@ def collate_fn(batch: list[dict]) -> dict:
 # 모델 블록
 # ─────────────────────────────────────────────
 class GroupMLP(nn.Module):
-    """그룹 피처 → 토큰 (d_model 차원), 2-block residual"""
+    """그룹 피처 → 토큰 (d_model 차원)"""
     def __init__(self, input_dim: int, d_model: int):
         super().__init__()
-        h1 = d_model // 2
-
-        # block1: input_dim → d_model  (차원 다름 → projection shortcut)
-        self.block1 = nn.Sequential(
-            nn.Linear(input_dim, h1),
-            nn.LayerNorm(h1),
-            nn.GELU(),
-            nn.Linear(h1, d_model),
+        self.net = nn.Sequential(
+            nn.Linear(input_dim, d_model),
             nn.LayerNorm(d_model),
-        )
-        self.proj1 = nn.Linear(input_dim, d_model, bias=False)
-
-        # block2: d_model → d_model  (identity shortcut)
-        self.block2 = nn.Sequential(
             nn.GELU(),
-            nn.Linear(d_model, d_model),
-            nn.LayerNorm(d_model),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        out = self.block1(x) + self.proj1(x)   # residual with projection
-        out = self.block2(out) + out            # identity residual
-        return out
+        return self.net(x)
 
 
 class LayoutEncoder(nn.Module):
@@ -228,26 +213,32 @@ class WarehouseDelayModel(nn.Module):
         group_sizes: list[int] = GROUP_SIZES,
         d_model: int = 32,
         n_heads: int = 4,
-        n_layers: int = 4,
+        n_layers: int = 1,
         dropout: float = 0.1,
         d_layout: int = 32,
         n_layout_types: int = len(LAYOUT_TYPE_MAP),
         n_layout_num_feats: int = len(LAYOUT_NUM_COLS),
+        use_film: bool = False,
     ):
         super().__init__()
+        self.use_film = use_film
 
         # 그룹별 MLP
         self.group_mlps = nn.ModuleList([
             GroupMLP(size, d_model) for size in group_sizes
         ])
 
-        # layout 피처 → layout 임베딩
-        self.layout_encoder = LayoutEncoder(n_layout_types, n_layout_num_feats, d_layout)
+        # layout 피처 → layout 임베딩 + FiLM (use_film=True일 때만 생성)
+        if use_film:
+            self.layout_encoder = LayoutEncoder(n_layout_types, n_layout_num_feats, d_layout)
+            self.film_layers = nn.ModuleList([
+                FiLM(d_model, d_layout) for _ in range(n_layers)
+            ])
 
         # CLS 토큰 (학습 가능 파라미터)
         self.cls_token = nn.Parameter(torch.zeros(1, 1, d_model))
 
-        # Transformer 레이어 + 레이어마다 FiLM
+        # Transformer 레이어
         self.transformer_layers = nn.ModuleList([
             nn.TransformerEncoderLayer(
                 d_model=d_model,
@@ -259,9 +250,6 @@ class WarehouseDelayModel(nn.Module):
             )
             for _ in range(n_layers)
         ])
-        self.film_layers = nn.ModuleList([
-            FiLM(d_model, d_layout) for _ in range(n_layers)
-        ])
 
         # Head: CLS 토큰 → regression
         self.head = nn.Sequential(
@@ -269,11 +257,8 @@ class WarehouseDelayModel(nn.Module):
             nn.Linear(d_model, d_model // 2),
             nn.GELU(),
             nn.Dropout(dropout),
-            nn.Linear(d_model // 2, d_model // 4),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(d_model // 4, 1),
-            nn.Softplus()
+            nn.Linear(d_model // 2, 1),
+            nn.Softplus(),
         )
 
     def forward(
@@ -294,66 +279,90 @@ class WarehouseDelayModel(nn.Module):
         cls = self.cls_token.expand(B, -1, -1)          # (B, 1, d_model)
         tokens = torch.cat([cls, tokens], dim=1)         # (B, 1+n_groups, d_model)
 
-        # layout 피처 → layout 임베딩
-        layout_emb = self.layout_encoder(layout_type, layout_nums)  # (B, d_layout)
-
-        # Transformer 레이어마다 FiLM 적용
-        for layer, film in zip(self.transformer_layers, self.film_layers):
-            tokens = layer(tokens)                    # (B, 1+n_groups, d_model)
-            tokens = film(tokens, layout_emb)         # (B, 1+n_groups, d_model)
+        if self.use_film:
+            layout_emb = self.layout_encoder(layout_type, layout_nums)
+            for layer, film in zip(self.transformer_layers, self.film_layers):
+                tokens = layer(tokens)
+                tokens = film(tokens, layout_emb)
+        else:
+            for layer in self.transformer_layers:
+                tokens = layer(tokens)
 
         out = tokens[:, 0]                 # CLS 토큰만 추출 (B, d_model)
         return self.head(out).squeeze(-1)  # (B,)
+
+    def encode(
+        self,
+        group_inputs: list[torch.Tensor],
+        layout_type: torch.Tensor,
+        layout_nums: torch.Tensor,
+    ) -> torch.Tensor:                     # (B, d_model)
+        """Head 직전 CLS 임베딩 반환 (LightGBM 등 downstream 용)"""
+        tokens = torch.stack(
+            [mlp(x) for mlp, x in zip(self.group_mlps, group_inputs)], dim=1
+        )
+        B   = tokens.size(0)
+        cls = self.cls_token.expand(B, -1, -1)
+        tokens = torch.cat([cls, tokens], dim=1)
+        if self.use_film:
+            layout_emb = self.layout_encoder(layout_type, layout_nums)
+            for layer, film in zip(self.transformer_layers, self.film_layers):
+                tokens = layer(tokens)
+                tokens = film(tokens, layout_emb)
+        else:
+            for layer in self.transformer_layers:
+                tokens = layer(tokens)
+        return tokens[:, 0]               # (B, d_model)
 
 
 # ─────────────────────────────────────────────
 # 모델 구조 출력
 # ─────────────────────────────────────────────
 def print_model_summary(model: WarehouseDelayModel) -> None:
-    # __init__ 기본값에서 하이퍼파라미터 읽기
-    d_model   = model.head[1].in_features          # Linear(d_model → d_model//2)
-    d_model_h = model.head[1].out_features         # d_model // 2
-    d_layout  = model.film_layers[0].gamma.in_features
-    type_dim  = model.layout_encoder.type_embed.embedding_dim
-    n_num     = model.layout_encoder.mlp[0].in_features - type_dim
+    d_model   = model.head[1].in_features
+    d_model_h = model.head[1].out_features
     n_heads   = model.transformer_layers[0].self_attn.num_heads
     n_layers  = len(model.transformer_layers)
     ffn_dim   = model.transformer_layers[0].linear1.out_features
     dropout   = model.transformer_layers[0].dropout.p
-    n_types   = model.layout_encoder.type_embed.num_embeddings
 
     W = 64
     print("\n" + "=" * W)
-    print("  모델 구조 (WarehouseDelayModel)")
+    film_tag = "FiLM ON" if model.use_film else "FiLM OFF"
+    print(f"  모델 구조 (WarehouseDelayModel  [{film_tag}])")
     print("=" * W)
 
     print(f"\n[GroupMLP × {len(model.group_mlps)}개]  →  각 그룹 피처를 {d_model}차원 토큰으로 변환")
-    group_names = list(GROUPS.keys())
-    for name, mlp in zip(group_names, model.group_mlps):
-        in_d = mlp.block1[0].in_features
-        h1   = mlp.block1[0].out_features
-        print(f"  그룹 {name} ({in_d:2d}d): "
-              f"block1: {in_d}→{h1}→{d_model} (+proj)  "
-              f"block2: {d_model}→{d_model} (+identity)")
+    for name, mlp in zip(GROUPS.keys(), model.group_mlps):
+        in_d = mlp.net[0].in_features
+        print(f"  그룹 {name} ({in_d:2d}d): {in_d}→{d_model}")
 
-    print(f"\n[LayoutEncoder]  →  layout 조건 벡터 ({d_layout}d)")
-    lm = model.layout_encoder.mlp
-    print(f"  Embedding({n_types}, {type_dim})  +  layout_nums ({n_num}d)")
-    print(f"  {lm[0].in_features}→{lm[0].out_features}→{lm[3].out_features}")
+    if model.use_film:
+        d_layout = model.film_layers[0].gamma.in_features
+        type_dim = model.layout_encoder.type_embed.embedding_dim
+        n_num    = model.layout_encoder.mlp[0].in_features - type_dim
+        n_types  = model.layout_encoder.type_embed.num_embeddings
+        lm       = model.layout_encoder.mlp
+        print(f"\n[LayoutEncoder]  →  layout 조건 벡터 ({d_layout}d)")
+        print(f"  Embedding({n_types}, {type_dim})  +  layout_nums ({n_num}d)")
+        print(f"  {lm[0].in_features}→{lm[0].out_features}→{lm[3].out_features}")
+        tf_label = f"[TransformerLayer + FiLM]  ×{n_layers}층"
+        film_detail = f"  각 레이어: TransformerEncoderLayer(Pre-LN) → FiLM(γ,β: Linear({d_layout}→{d_model}))"
+    else:
+        print(f"\n[LayoutEncoder / FiLM]  사용 안 함")
+        tf_label = f"[TransformerLayer]  ×{n_layers}층  (FiLM 없음)"
+        film_detail = f"  각 레이어: TransformerEncoderLayer(Pre-LN)"
 
-    print(f"\n[CLS Token]  nn.Parameter(1, 1, {d_model})  →  배치마다 expand 후 토큰 앞에 prepend")
+    print(f"\n[CLS Token]  nn.Parameter(1, 1, {d_model})")
 
-    print(f"\n[TransformerLayer + FiLM]  ×{n_layers}층")
+    print(f"\n{tf_label}")
     print(f"  d_model={d_model},  n_heads={n_heads},  ffn={ffn_dim},  dropout={dropout}")
     print(f"  시퀀스 길이: 1(CLS) + {len(model.group_mlps)}(그룹) = {1+len(model.group_mlps)}")
-    print(f"  각 레이어: TransformerEncoderLayer(Pre-LN) → FiLM(γ,β: Linear({d_layout}→{d_model}))")
+    print(film_detail)
 
-    h2 = model.head[4].out_features   # d_model // 4
     print(f"\n[Head]  CLS 토큰 → 스칼라 예측")
-    print(f"  tokens[:, 0]  →  ({d_model}d)")
     print(f"  LayerNorm({d_model}) → Linear({d_model}→{d_model_h}) → GELU "
-          f"→ Dropout → Linear({d_model_h}→{h2}) → GELU "
-          f"→ Dropout → Linear({h2}→1) → Softplus")
+          f"→ Dropout → Linear({d_model_h}→1) → Softplus")
 
     total     = sum(p.numel() for p in model.parameters())
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -440,9 +449,9 @@ def main():
     val_ds   = WarehouseDataset(val_df,   layout_df, scalers=train_ds.scalers, is_train=True)
     test_ds  = WarehouseDataset(test_df,  layout_df, scalers=train_ds.scalers, is_train=False)
 
-    train_loader = DataLoader(train_ds, batch_size=128, shuffle=True,  collate_fn=collate_fn, num_workers=8)
-    val_loader   = DataLoader(val_ds,   batch_size=128, shuffle=False, collate_fn=collate_fn, num_workers=8)
-    test_loader  = DataLoader(test_ds,  batch_size=128, shuffle=False, collate_fn=collate_fn, num_workers=8)
+    train_loader = DataLoader(train_ds, batch_size=512, shuffle=True,  collate_fn=collate_fn, num_workers=8)
+    val_loader   = DataLoader(val_ds,   batch_size=512, shuffle=False, collate_fn=collate_fn, num_workers=8)
+    test_loader  = DataLoader(test_ds,  batch_size=512, shuffle=False, collate_fn=collate_fn, num_workers=8)
 
     model = WarehouseDelayModel().to(device)
     print_model_summary(model)
@@ -454,7 +463,7 @@ def main():
     criterion = nn.L1Loss()
 
     best_val_loss  = float("inf")
-    patience       = 20
+    patience       = 10
     no_improve_cnt = 0
 
     for epoch in range(1, 501):

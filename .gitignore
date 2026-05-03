@@ -10,7 +10,7 @@ processed/
 submission*.csv
 
 # EDA 결과
-eda_output/
+#eda_output/
 
 # 가상환경
 myenv/
