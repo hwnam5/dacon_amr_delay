@@ -2,6 +2,12 @@
 open/
 processed/
 
+# 학습/앙상블 산출물
+phase2_artifacts/
+catboost_info/
+**/catboost_info/
+*.npy
+
 # 모델 체크포인트
 *.pt
 *.pth
@@ -10,12 +16,18 @@ processed/
 submission*.csv
 
 # EDA 결과
-#eda_output/
+eda_output/
+
+# 로그/이벤트
+*.log
+events.out.tfevents*
+*.tsv
 
 # 가상환경
 myenv/
 venv/
 .venv/
+.codex/
 
 # Python
 __pycache__/
